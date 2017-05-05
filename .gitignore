@@ -35,3 +35,10 @@ jspm_packages
 
 # Optional REPL history
 .node_repl_history
+
+# Private config data
+recipients.json
+recipients copy.json
+
+# Mac stuff
+.DS_Store

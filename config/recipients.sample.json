@@ -1,0 +1,10 @@
+{
+    "contacts": [
+        {
+            "firstName": "John",
+            "lastName": "Smith",
+            "mobile": "+18765551212",
+            "email": "sample@test.com"
+        }
+    ]
+}
