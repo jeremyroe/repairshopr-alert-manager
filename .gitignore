@@ -42,3 +42,6 @@ recipients copy.json
 
 # Mac stuff
 .DS_Store
+
+#Yarn 
+yarn.lock
