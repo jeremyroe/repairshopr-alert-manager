@@ -7,7 +7,7 @@ var apiUrl = process.env.rsurl;
 
 const basePath = '/api/v1';
 
-axios.defaults.headers.post['Content-Type'] = 'application/json';
+//axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 const get = function(extPath, params, callback) {
   axios.get('https://' + apiUrl + basePath + extPath + (params ? '?' + params : ''))
@@ -17,17 +17,6 @@ const get = function(extPath, params, callback) {
     }
   }).catch((error) => {
     callback(error, null);
-  });
-}
-
-const post = function(extPath, body, callback) {
-  axios.post('https://' + url + basePath + extPath, body)
-  .then((response) => {
-    if(response.data){
-      callback(null, response.data.ticket.number);
-    }
-  }).catch((error) => {
-    console.log(error);
   });
 }
 

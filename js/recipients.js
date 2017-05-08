@@ -14,3 +14,11 @@ exports.getAllSMS = function() {
     });
     return smsList;
 }
+
+exports.getAllPushover = function() {
+    let poList = [];
+    recipients.contacts.forEach((contact) => {
+        poList.push(contact.pushover);
+    });
+    return poList;
+}
