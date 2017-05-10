@@ -29,7 +29,7 @@ exports.alertAll = function(poList, message, callback) {
         post(poUser, message, (err, response) => {
             if (response) {
                 callback(null, response);
-            } else {
+            } else if (err) {
                 callback(new Error(err));
             }
         })
