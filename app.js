@@ -48,10 +48,15 @@ schedule.scheduleJob('*/1 * * * *', function(){
                             console.log(err);
                         }
                     });
-                }
+                } 
             });
+
         } else {
+
+            // API returned no Tickets
             console.log('No emergency tickets found');
+            // Clear the monitored tickets
+            pendingTickets = [];
         }
     });
 });
