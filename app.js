@@ -4,6 +4,7 @@
 
 const status = 'New';
 const searchTerm = 'Emergency';
+const recurringTimer = 15; // The interval to wait before triggering additional alerts on existing tickets
 
 //DO NOT MODIFY BELOW THIS LINE ***********//
 
@@ -14,21 +15,25 @@ const repairshopr = require('./js/repairshopr.js');
 
 var pendingTickets = [];
 
-//Check the API for tickets with a New status and the keyword Emergency in the subject
+//Check the API for tickets with monitored statuses and keywords in the subject
 
 schedule.scheduleJob('*/1 * * * *', function(){
+
     console.log('Checking for tickets');
     repairshopr.checkTickets(status, searchTerm, (err, tickets) => {
+
         if (err) {
-            console.log(err)
-        } else if (tickets.length > 0) {
+            console.log(err);
+        } else if (tickets) {
             console.log(tickets.length + ' Tickets found via API');
+            console.log('Known Tickets:\n' + JSON.stringify(pendingTickets));            
             tickets.forEach((ticket) => {
 
-                // Check if a ticket is already known to the system and alert on it if not.
-                if (checkPending(ticket).length === 0) {
-                    console.log('Ticket is not yet known - adding to monitored ticket list');
-                    pendingTickets.push({number: ticket.number, timer: moment()});
+                // Check if a ticket was already alerted and is in the monitored queue
+
+                if ( !checkPending(ticket) ) {
+                    console.log('Ticket ID: ' + ticket.id + ' is a new ticket - alerting and adding to monitored queue');
+                    pendingTickets.push({id: ticket.id, timer: moment()});
                     alerter.alert(ticket, (err, response) => {
                         if (response) {
                             console.log(response);
@@ -37,10 +42,12 @@ schedule.scheduleJob('*/1 * * * *', function(){
                         }
                     });
                 
-                //If the ticket IS known has 15 minutes elapsed since the last alert.
-                //TODO - Handle what happens post 15 minutes and remove tickets no longer in New status 
-                } else if (checkPending(ticket).length > 0 && checkRecurring(ticket)) {
-                    console.log('This ticket is monitored and more than 15 minutes old');
+                // //If the ticket IS monitored and the set time has elapsed since the last alert.
+                
+                // //TODO - Handle what happens post 15 minutes and remove tickets no longer in New status 
+                
+                } else if (checkPending(ticket) && checkRecurring(ticket)) {
+                    console.log('Reccurring Alert interval reached:\n' + 'Triggering alert on Ticket ID ' + ticket.id);
                     alerter.alert(ticket, (err, response) => {
                         if (response) {
                             console.log(response);
@@ -48,37 +55,36 @@ schedule.scheduleJob('*/1 * * * *', function(){
                             console.log(err);
                         }
                     });
-                } 
+                }
             });
 
         } else {
 
             // API returned no Tickets
-            console.log('No emergency tickets found');
-            // Clear the monitored tickets
+
+            console.log('No tickets to alert discovered');
+            
+            // Clear the monitored tickets queue
+            
             pendingTickets = [];
         }
+
     });
 });
 
-// Check if a ticket returned from the API already exists in our monitored ticket array
-function checkPending(ticket) {
-    console.log('Checking if the ticket is already known');
-    let found = pendingTickets.map((pending) => {
-        return pending.number === ticket.number;
-    });
-    return found;
-}
 
-// Check if a ticket found in our monitored ticket array has been there longer than 15 minutes
-function checkRecurring(ticket) {
-    console.log('Checking the tickets timer');
-    var found = pendingTickets.map((pending) => {
-        if(pending.timer.add(15, 'minutes').isBefore(moment())) {
-            return true;
-        } else {
-            return false;
-        }
+// Check if a ticket returned from the API already exists in our monitored ticket array
+
+function checkPending(ticket) {
+    return pendingTickets.some((pending) => {
+        return pending.id === ticket.id;
     });
-    return found[0];
-}
+};
+
+// Check if a ticket found in our monitored ticket array has been there longer than the set interval
+
+function checkRecurring(ticket) {
+    return pendingTickets.some((pending) => {
+        return pending.timer.clone().add(recurringTimer, 'minutes').isBefore(moment());
+    });
+};

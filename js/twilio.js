@@ -13,7 +13,7 @@ const send = function(to, body, callback) {
         body: body
     }, (err, message) => {
         if(message){
-            callback(null, message);
+            callback(null, 'SMS alert succesful');
         } else {
             callback(new Error(err));
         }

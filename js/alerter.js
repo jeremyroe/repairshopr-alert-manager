@@ -10,8 +10,10 @@ const rsUrl = process.env.rsurl;
 exports.alert = function(ticket, callback) {
     var smsList = recipients.getAllSMS();
     var poList = recipients.getAllPushover();
+
     // Format the ticket object into a string for the SMS Message - Limit name to 15 characters and subject to 76 to allow consistent URL inclusion
-    let message = 'EMERGENCY Ticket from ' + ticket.customer_business_then_name.substring(0,14) + ' ' + ticket.subject.substring(0,75) + ' https://' + rsUrl + '/' + ticket.number;
+    
+    let message = 'ALERT: ' + ticket.customer_business_then_name.substring(0,14) + ' ' + ticket.subject.substring(0,75) + ' https://' + rsUrl + '/tickets/' + ticket.id;
     twilioAlert(smsList, message, (err, response) => {
         if(response) {
             callback(response);
@@ -36,8 +38,10 @@ exports.alert = function(ticket, callback) {
 }
 
 
-function twilioAlert(smsList, message, callback) {    
+function twilioAlert(smsList, message, callback) {
+
     // Additional safety Limit the message length to 160 characters to prevent split text messages and trigger the alert         
+    
     twilio.alertAll(smsList, message.substring(0,159), (err, response) => {
         if(response) {
             callback(null, response.sid);

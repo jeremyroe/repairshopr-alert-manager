@@ -7,8 +7,9 @@ const url = process.env.slurl;
 const post = function(message, callback) {
     axios.post(url, { text: message })
     .then((response) => {
-        if(response.status === 200 && response.statusText === 'OK')
-        callback(null, 'Slack alert succesful');
+        if(response.status === 200 && response.statusText === 'OK') {
+	        callback(null, 'Slack alert succesful');
+        }
     })
     .catch((err) => {
         callback(new Error(err));
